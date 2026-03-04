@@ -9,7 +9,7 @@ from typing import List, Optional, Union
 from diffusers import StableDiffusionPipeline
 from PIL import Image
 
-from .spectral import compute_discriminative_projector
+from .spectral import compute_discriminative_projector, SPECTRAL_MODES
 from .attention import get_cross_attention_layers, apply_weight_update, count_cross_attention_layers
 from .utils import aggregate_embeddings, EMBEDDING_MODES
 
@@ -36,6 +36,7 @@ class CURE:
         pipe: StableDiffusionPipeline,
         device: Optional[str] = None,
         embedding_mode: str = "mean_masked",
+        spectral_mode: str = "tikhonov",
     ):
         """
         Initialize CURE with a Stable Diffusion pipeline.
@@ -48,6 +49,9 @@ class CURE:
                 "token_flat" — flatten all tokens (legacy, for ablation only)
                 "mean_all" — mean over all tokens including padding
                 "eos_only" — use only the end-of-sequence token
+            spectral_mode: Spectral weighting mode.
+                "tikhonov" (default) — original CURE weighting
+                "gavish_donoho" — hard-thresholded spectral weighting
         """
         self.pipe = pipe
 
@@ -63,6 +67,9 @@ class CURE:
         if embedding_mode not in EMBEDDING_MODES:
             raise ValueError(f"Unknown embedding_mode '{embedding_mode}'. Choose from {EMBEDDING_MODES}")
         self.embedding_mode = embedding_mode
+        if spectral_mode not in SPECTRAL_MODES:
+            raise ValueError(f"Unknown spectral_mode '{spectral_mode}'. Choose from {SPECTRAL_MODES}")
+        self.spectral_mode = spectral_mode
 
         # Move pipeline to device
         self.pipe = self.pipe.to(self.device)
@@ -109,7 +116,7 @@ class CURE:
         self,
         forget_embeddings: torch.Tensor,
         retain_embeddings: Optional[torch.Tensor],
-        alpha: float
+        alpha: float,
     ) -> torch.Tensor:
         """
         Compute the Spectral Eraser (discriminative projector).
@@ -130,7 +137,8 @@ class CURE:
         return compute_discriminative_projector(
             forget_embeddings=forget_embeddings,
             retain_embeddings=retain_embeddings,
-            alpha=alpha
+            alpha=alpha,
+            spectral_mode=self.spectral_mode,
         )
 
     def save_original_weights(self) -> None:
@@ -239,4 +247,8 @@ class CURE:
 
     def __repr__(self) -> str:
         n_layers = count_cross_attention_layers(self.pipe.unet)
-        return f"CURE(device={self.device}, cross_attention_layers={n_layers})"
+        return (
+            f"CURE(device={self.device}, "
+            f"cross_attention_layers={n_layers}, "
+            f"spectral_mode={self.spectral_mode})"
+        )

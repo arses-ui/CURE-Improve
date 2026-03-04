@@ -3,11 +3,11 @@ SubspaceBank: Tracks the cumulative orthonormal basis of all erased concept subs
 
 This is the core new data structure for CURE-Sequential. It allows each new concept's
 discriminative projector to be orthogonalized against all previously erased subspaces,
-guaranteeing zero cross-term interference in sequential unlearning.
+eliminating or strongly suppressing cross-term interference in sequential unlearning.
 
 Math:
     If P1_orth, P2_orth, ... are projectors built from mutually orthogonal subspaces,
-    then Pi @ Pj = 0 for i != j, so sequential edits compose with zero interference:
+    then Pi @ Pj = 0 for i != j, so sequential edits compose cleanly:
         W_n = W0 @ (I - P1_orth - P2_orth - ... - Pn_orth)
 """
 

@@ -223,7 +223,7 @@ def main():
     print("WHAT TO LOOK FOR:")
     print("  naive/checkpoint_N/concept[0]/ — check if concept[0] reappears")
     print("  sequential_orth/checkpoint_N/  — should stay erased throughout")
-    print("  If naive shows leakage after N>50 but orth doesn't → paper result!")
+    print("  If naive shows collateral degradation after N>50 but orth doesn't → paper result!")
     print("=" * 70)
 
 

@@ -54,7 +54,7 @@ This is less than originally estimated. The lambda_threshold=0.01 is conservativ
 
 ## Next Experiments
 
-1. **Reproduce Figure 6**: run `experiments/baseline_naive.py --n-concepts 50` and compare SIS curves
+1. **Reproduce Figure 6**: run `experiments/baseline_naive.py --n-concepts 100` and compare collateral degradation curves
 2. **Budget calibration**: sweep `lambda_threshold` (0.001, 0.01, 0.05, 0.1) and measure dims/concept vs erasure quality tradeoff
 3. **Order invariance test**: erase [car, dog] vs [dog, car] and verify identical final weights
 4. **Stress test**: 50+ concepts sequential on CUDA

@@ -1,10 +1,11 @@
 """
-SequentialCURE: Interference-free sequential concept unlearning.
+SequentialCURE: Sequential concept unlearning with orthogonal projector composition.
 
 Extends the original CURE class with SubspaceBank-based orthogonalization.
 Each new concept's discriminative projector is guaranteed to be orthogonal
-to all previously applied projectors, eliminating the cross-term interference
-that causes CURE's ~50-concept degradation (Figure 6 of the paper).
+to all previously applied projectors, removing the cross-term interference
+source that causes collateral degradation on untargeted content in naive
+sequential CURE (Figure 6 of the paper: divergence starts ~50, stronger beyond ~100).
 
 Usage:
     pipe = StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4")
@@ -29,8 +30,8 @@ from diffusers import StableDiffusionPipeline
 
 from .subspace_bank import SubspaceBank
 from .spectral import (
-    compute_discriminative_projector,
     compute_discriminative_projector_orth,
+    SPECTRAL_MODES,
 )
 
 # Re-use original CURE's attention utilities
@@ -57,7 +58,7 @@ class SequentialCURE:
     So the total edit after n concepts is:
         W_n = W0 @ (I - P1_orth - P2_orth - ... - Pn_orth)
 
-    — a single clean projection, no cross-terms, no interference.
+    — a single clean projection with cross-term interference eliminated or strongly suppressed.
     """
 
     def __init__(
@@ -67,6 +68,7 @@ class SequentialCURE:
         hidden_dim: int = 768,
         orth_threshold: float = 1e-3,
         embedding_mode: str = "mean_masked",
+        spectral_mode: str = "tikhonov",
     ):
         self.pipe = pipe
 
@@ -83,6 +85,9 @@ class SequentialCURE:
         if embedding_mode not in EMBEDDING_MODES:
             raise ValueError(f"Unknown embedding_mode '{embedding_mode}'. Choose from {EMBEDDING_MODES}")
         self.embedding_mode = embedding_mode
+        if spectral_mode not in SPECTRAL_MODES:
+            raise ValueError(f"Unknown spectral_mode '{spectral_mode}'. Choose from {SPECTRAL_MODES}")
+        self.spectral_mode = spectral_mode
 
         # Core new component
         self.bank = SubspaceBank(hidden_dim=hidden_dim, orth_threshold=orth_threshold)
@@ -150,7 +155,7 @@ class SequentialCURE:
         Erase a concept using an orthogonalized spectral projector.
 
         The resulting projector is guaranteed orthogonal to all prior projectors,
-        so sequential application introduces zero cross-term interference.
+        so sequential application eliminates or strongly suppresses cross-term interference.
 
         Args:
             forget_prompts: Prompts describing the concept to erase
@@ -190,6 +195,7 @@ class SequentialCURE:
             alpha=alpha,
             bank=self.bank,
             adaptive_alpha=adaptive_alpha,
+            spectral_mode=self.spectral_mode,
         )
 
         # Step 3: Apply to all cross-attention Wk/Wv (same as original CURE)
@@ -260,5 +266,6 @@ class SequentialCURE:
             f"device={self.device}, "
             f"layers={n_layers}, "
             f"erased={len(self.erased_concepts)}, "
-            f"budget={self.bank.remaining_budget}/768)"
+            f"budget={self.bank.remaining_budget}/768, "
+            f"spectral_mode={self.spectral_mode})"
         )

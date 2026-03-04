@@ -141,7 +141,11 @@ Qualitative results on erasing 5 artists (Van Gogh, Monet, Picasso, Rembrandt, W
 
 ### Figure 6 — Sequential Erasure Degradation
 
-**This is the main limitation CURE-Sequential addresses.** When CURE is applied sequentially to erase N concepts, LPIPS between erased and non-erased outputs increases with N. After ~50 concepts, the erasures begin to interfere with each other — earlier erasures partially degrade as later ones are applied.
+**This is the main limitation CURE-Sequential addresses.** When CURE is applied sequentially to erase N artist styles, the accumulated weight edits create cross-term interference that manifests as collateral degradation on untargeted content. The paper shows:
+
+- Around ~50 erasures: perceptual divergence begins (LPIPS between erased and non-erased outputs starts increasing)
+- Up to ~100 erasures: CURE still performs comparably to original SD on untargeted artworks
+- Beyond ~100: noticeable interference/collateral damage on untargeted artwork generations (CLIP Score drops, LPIPS rises)
 
 The paper attributes this to cross-term interference but does not propose a fix.
 
@@ -149,7 +153,7 @@ The paper attributes this to cross-term interference but does not propose a fix.
 
 ## Limitations (per the paper)
 
-1. **Sequential degradation** — cross-term interference after ~50 erasures (Figure 6)
+1. **Sequential degradation** — cross-term interference causing collateral degradation on untargeted content; perceptual divergence starts around ~50 erasures, stronger interference beyond ~100 (Figure 6)
 2. **CLIP-space boundary** — cannot erase concepts that CLIP's text encoder doesn't distinguish (e.g., subtle visual textures without good textual descriptions)
 3. **Inversion attacks** — a determined adversary can potentially reconstruct the concept via textual inversion or prompt optimization on the edited model
 4. **No quality metric for erasure completeness** — the paper uses classifier accuracy as a proxy but this is imperfect
@@ -210,7 +214,7 @@ W_new = W - W @ Pdis
 
 CURE-Sequential (this repo) extends CURE with **orthogonal projector composition**:
 
-Before computing `Pdis_n` for concept `n`, the forget subspace basis `Vh_f` is orthogonalized against the cumulative basis of all previously erased subspaces (stored in `SubspaceBank`). This guarantees `Pi @ Pj = 0` for all `i ≠ j`, making sequential edits compose with zero interference:
+Before computing `Pdis_n` for concept `n`, the forget subspace basis `Vh_f` is orthogonalized against the cumulative basis of all previously erased subspaces (stored in `SubspaceBank`). This guarantees `Pi @ Pj = 0` for all `i ≠ j`, eliminating or strongly suppressing cross-term interference:
 
 ```
 W_n = W0 @ (I - P1_orth - P2_orth - ... - Pn_orth)

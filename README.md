@@ -20,9 +20,9 @@ The base CURE method: training-free concept erasure for Stable Diffusion v1.4 vi
 
 ### `cure_seq/` — CURE-Sequential
 
-**Problem:** Applying CURE sequentially to erase multiple concepts causes cross-term interference — earlier erasures degrade after ~50 concepts (Figure 6).
+**Problem:** Sequential CURE edits accumulate cross-term interference, which primarily appears as collateral degradation on untargeted generations. In the paper, perceptual divergence starts around 50 erasures, while stronger untargeted interference appears beyond ~100 (Figure 6).
 
-**Solution:** Orthogonalize each new concept's projector against all previously erased subspaces, guaranteeing `Pi @ Pj = 0` for all `i ≠ j`. Sequential edits compose cleanly with zero interference.
+**Solution:** Orthogonalize each new concept's projector against all previously erased subspaces, guaranteeing `Pi @ Pj = 0` for all `i ≠ j`. This removes the interference source for the forget subspaces, enabling cleaner sequential composition.
 
 See [`cure_seq/README.md`](cure_seq/README.md) for details.
 

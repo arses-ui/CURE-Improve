@@ -4,7 +4,7 @@ Evaluation metrics for CURE-Sequential.
 New metric: Sequential Interference Score (SIS)
     Measures how much concept C1's erasure has degraded after erasing C1, C2, ..., Cn.
     Ideal: SIS = 0 (orthogonal method should maintain this).
-    CURE (naive): SIS > 0 after ~50 concepts.
+    CURE (naive): SIS > 0 as erasures accumulate (collateral degradation on untargeted content).
 
 Standard metrics (from CURE paper):
     - Concept accuracy via ResNet-50 classifier (↓ = better erasure)
@@ -81,7 +81,7 @@ def sequential_interference_score(
 
     Generates concept images from both checkpoint erasers and computes
     the change in concept accuracy. Ideally = 0 (orthogonal method),
-    but positive (concept leaking back) for naive sequential CURE.
+    but positive (interference degradation) for naive sequential CURE.
 
     Args:
         concept_name: Human label for the concept
@@ -110,7 +110,7 @@ def sequential_interference_score(
         "concept": concept_name,
         "acc_after_1_erasure": acc_1,
         "acc_after_n_erasures": acc_n,
-        "sis": acc_n - acc_1,  # positive = concept leaking back = bad
+        "sis": acc_n - acc_1,  # positive = interference degradation = bad
     }
 
 

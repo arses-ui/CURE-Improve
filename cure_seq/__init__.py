@@ -5,4 +5,5 @@ from .spectral import (
     compute_discriminative_projector_orth,
     spectral_expansion,
     build_projector,
+    SPECTRAL_MODES,
 )

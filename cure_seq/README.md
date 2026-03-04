@@ -2,7 +2,7 @@
 
 **Interference-free sequential concept unlearning for Stable Diffusion.**
 
-An extension of [CURE](https://arxiv.org/abs/2505.12677) that fixes the sequential erasure degradation problem (Figure 6 of the paper) through orthogonal projector composition. Each concept's projector is orthogonalized against all prior erasures, eliminating cross-term interference. Measured capacity under current settings: ~20-40 concepts in CLIP's 768-dim space (dependent on embedding mode and lambda threshold).
+An extension of [CURE](https://arxiv.org/abs/2505.12677) that addresses the sequential erasure degradation problem (Figure 6 of the paper) through orthogonal projector composition. Each concept's projector is orthogonalized against all prior erasures, removing the cross-term interference source for the forget subspaces and enabling cleaner sequential composition. Measured capacity under current settings: ~20-40 concepts in CLIP's 768-dim space (dependent on embedding mode and lambda threshold).
 
 ---
 
@@ -18,7 +18,7 @@ W2 = W1 - W1 @ P2              # Erase B
                          INTERFERENCE TERM
 ```
 
-The cross-term `W0 @ P1 @ P2` is nonzero whenever the two concept subspaces overlap in CLIP's 768-dim embedding space — which they do for any semantically related concepts. The CURE paper's own Figure 6 shows this empirically: after ~50 sequential erasures, quality degrades.
+The cross-term `W0 @ P1 @ P2` is nonzero whenever the two concept subspaces overlap in CLIP's 768-dim embedding space — which they do for any semantically related concepts. The CURE paper's Figure 6 shows this empirically: perceptual divergence starts around ~50 sequential erasures, with stronger collateral damage on untargeted artworks beyond ~100.
 
 ## The Fix
 
@@ -34,7 +34,7 @@ So sequential edits compose exactly:
 W_n = W0 @ (I - P1 - P2 - ... - Pn)
 ```
 
-A single clean projection. No cross-terms. No interference. The total edit after `n` concepts is mathematically equivalent to a single batch erasure with the joint projector.
+A single clean projection. No cross-terms. The total edit after `n` concepts is mathematically equivalent to a single batch erasure with the joint projector. With retain-term subtraction (`Pdis = Pf - Pf @ Pr`), this eliminates or strongly suppresses cross-term interference.
 
 ## Results (5 concepts, MPS)
 
@@ -77,7 +77,7 @@ from cure_seq import SequentialCURE
 pipe = StableDiffusionPipeline.from_pretrained("CompVis/stable-diffusion-v1-4")
 eraser = SequentialCURE(pipe)
 
-# Erase concepts one by one — zero interference
+# Erase concepts one by one — orthogonalized, no cross-terms
 eraser.erase_concept(["car", "automobile", "vehicle"], concept_name="car")
 eraser.erase_concept(["dog", "puppy"], concept_name="dog")
 eraser.erase_concept(["Van Gogh", "van gogh style"], concept_name="van_gogh")
@@ -146,11 +146,11 @@ cure-sequential/
 SIS(n) = concept_accuracy(C1, model_after_n) - concept_accuracy(C1, model_after_1)
 ```
 - Ideal: SIS = 0 (orthogonal method)
-- Naive CURE: SIS > 0 after ~50 concepts
+- Naive CURE: SIS > 0 as sequential erasures accumulate (collateral degradation on untargeted content)
 
 ## Dimensionality Budget
 
-CLIP's embedding space is 768-dimensional. Each concept consumes ~20-40 dims (after lambda filtering). Theoretical capacity: **~20-40 concepts** before the budget tightens, vs. CURE's empirical degradation at ~50.
+CLIP's embedding space is 768-dimensional. Each concept consumes ~20-40 dims (after lambda filtering). Theoretical capacity: **~20-40 concepts** before the budget tightens. The paper's Figure 6 shows perceptual divergence starting around ~50 erasures and stronger untargeted interference beyond ~100.
 
 The budget is finite but principled — you always know exactly how much space remains and can trade off erasure precision against capacity via `lambda_threshold`.
 
@@ -158,7 +158,7 @@ The budget is finite but principled — you always know exactly how much space r
 
 | Method | Sequential? | Interference-free? | Training-free? |
 |---|---|---|---|
-| CURE (naive sequential) | Yes | No (~50 concept limit) | Yes |
+| CURE (naive sequential) | Yes | No (collateral degradation beyond ~50-100) | Yes |
 | CURE batch | No | Yes (by construction) | Yes |
 | MACE | Yes | Partial | No |
 | ScaPre (arXiv:2601.06162) | Yes | Partial | Yes |
