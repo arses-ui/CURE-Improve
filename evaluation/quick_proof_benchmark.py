@@ -495,6 +495,8 @@ def write_summary_md(out_path: Path, run: Dict):
         "- Lower retention drop indicates less collateral damage on untargeted prompts.",
         "- Values are reported as mean +- std across seeds.",
     ]
+    if run["config"].get("spectral_mode") == "gavish_donoho":
+        lines.append("- In gavish_donoho mode, alpha is not used for spectral weighting in current implementation.")
     out_path.write_text("\n".join(lines), encoding="utf-8")
 
 
@@ -544,6 +546,8 @@ def main():
     print(f"Concepts ({len(concepts_ordered)}): {concepts_ordered}")
     print(f"Seeds ({len(seeds)}): {seeds}")
     print(f"Spectral mode: {args.spectral_mode}")
+    if args.spectral_mode == "gavish_donoho":
+        print("Note: in current implementation, --alpha does not affect gavish_donoho weighting.")
     print(f"Output: {out_dir}")
 
     clip_model, clip_processor = load_clip_scorer(args.clip_model, device=device)
