@@ -63,3 +63,44 @@ python evaluation/run_shared_eval.py \
 - `mean_masked` is the default embedding aggregation mode.
 - Use `--embedding-mode token_flat` only for ablation.
 - `cure_seq` supports only `sequential` mode.
+
+## Figure-6 Style Metrics (LPIPS + CLIP)
+
+To reproduce the paper-style sequential-degradation analysis (Figure-6-style curve), use:
+
+```bash
+python evaluation/paper_figure6_metrics.py \
+  --methods "cure,cure_seq" \
+  --erased-concepts-file evaluation/artist_lists/erased_artists_50.txt \
+  --unerased-artists-file evaluation/artist_lists/unerased_artists_10.txt \
+  --checkpoints "1,5,10,25,50" \
+  --seeds "11,22,33" \
+  --alpha 2.0 \
+  --steps 20 \
+  --height 384 \
+  --width 384 \
+  --embedding-mode mean_masked \
+  --spectral-mode tikhonov \
+  --max-prompts-per-group 180 \
+  --cache-dir ./models \
+  --output-dir outputs/figure6_eval
+```
+
+Provided lists:
+- `evaluation/artist_lists/erased_artists_50.txt`: 50 erase targets for scalability stress.
+- `evaluation/artist_lists/unerased_artists_10.txt`: hold-out styles for preservation tracking.
+
+Outputs:
+- `results.json`: full numeric payload
+- `summary.md`: method-by-checkpoint table
+- `plots/figure6_like_<method>.png`: dual-axis curve (`CLIP_u` and `LPIPSu`)
+- `plots/lpips_u_comparison.png`: cross-method LPIPSu comparison
+
+Metric conventions:
+- `LPIPSe` (erased prompts): higher = stronger target divergence
+- `LPIPSu` (unerased prompts): lower = less collateral perceptual drift
+- `CLIP_u` (unerased prompts): higher = better prompt-image alignment
+
+Install extras if needed:
+- `lpips`
+- `matplotlib`
