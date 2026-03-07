@@ -66,6 +66,9 @@ python evaluation/run_shared_eval.py \
 
 ## Figure-6 Style Metrics (LPIPS + CLIP)
 
+Detailed runbook:
+- `evaluation/FIGURE6_RUNBOOK.md`
+
 To reproduce the paper-style sequential-degradation analysis (Figure-6-style curve), use:
 
 ```bash
