@@ -91,7 +91,28 @@ python evaluation/paper_figure6_metrics.py \
 
 Provided lists:
 - `evaluation/artist_lists/erased_artists_50.txt`: 50 erase targets for scalability stress.
+- `evaluation/artist_lists/erased_artists_100.txt`: 100 erase targets for high-load extension.
 - `evaluation/artist_lists/unerased_artists_10.txt`: hold-out styles for preservation tracking.
+
+100-artist extension command:
+
+```bash
+python evaluation/paper_figure6_metrics.py \
+  --methods "cure,cure_seq" \
+  --erased-concepts-file evaluation/artist_lists/erased_artists_100.txt \
+  --unerased-artists-file evaluation/artist_lists/unerased_artists_10.txt \
+  --checkpoints "1,5,10,25,50,100" \
+  --seeds "11,22,33" \
+  --alpha 2.0 \
+  --steps 20 \
+  --height 384 \
+  --width 384 \
+  --embedding-mode mean_masked \
+  --spectral-mode tikhonov \
+  --max-prompts-per-group 180 \
+  --cache-dir ./models \
+  --output-dir outputs/figure6_eval_100
+```
 
 Outputs:
 - `results.json`: full numeric payload
