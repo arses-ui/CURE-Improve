@@ -56,3 +56,6 @@ models/
 wandb/
 runs/
 *.pdf
+
+# Allow committed result artifacts
+!evaluation/figure6_results/results.json
