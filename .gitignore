@@ -59,3 +59,4 @@ runs/
 
 # Allow committed result artifacts
 !evaluation/figure6_results/results.json
+!evaluation/figure6_results_100/results.json
