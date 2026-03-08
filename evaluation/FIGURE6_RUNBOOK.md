@@ -27,7 +27,7 @@ python evaluation/paper_figure6_metrics.py \
   --checkpoints "1,5,10,25,50" \
   --seeds "11,22,33" \
   --max-prompts-per-group 180 \
-  --output-dir outputs/figure6_eval
+  --output-dir /Users/arses/Desktop/cure-outputs/figure6_eval_50
 ```
 
 This should create `dry_run.json` and confirm your checkpoint setup before GPU spend.
@@ -49,7 +49,7 @@ python evaluation/paper_figure6_metrics.py \
   --spectral-mode tikhonov \
   --max-prompts-per-group 180 \
   --cache-dir ./models \
-  --output-dir outputs/figure6_eval
+  --output-dir /Users/arses/Desktop/cure-outputs/figure6_eval_50
 ```
 
 Optional:
@@ -75,7 +75,7 @@ python evaluation/paper_figure6_metrics.py \
   --spectral-mode tikhonov \
   --max-prompts-per-group 180 \
   --cache-dir ./models \
-  --output-dir outputs/figure6_eval_100
+  --output-dir /Users/arses/Desktop/cure-outputs/figure6_eval_100
 ```
 
 To dry-run this setup first:
@@ -89,20 +89,26 @@ python evaluation/paper_figure6_metrics.py \
   --checkpoints "1,5,10,25,50,100" \
   --seeds "11,22,33" \
   --max-prompts-per-group 180 \
-  --output-dir outputs/figure6_eval_100
+  --output-dir /Users/arses/Desktop/cure-outputs/figure6_eval_100
 ```
 
 ## 5) Output Structure
 
 For each run:
 
-`outputs/figure6_eval/<timestamp>/`
+`<output-dir>/<timestamp>/`
 - `results.json`: all numeric outputs
 - `summary.md`: compact metric table by checkpoint
 - `plots/figure6_like_cure.png`
 - `plots/figure6_like_cure_seq.png`
 - `plots/lpips_u_comparison.png`
 - `baseline/` (if generated/saved)
+
+The script creates a unique timestamped run folder for every run (microsecond precision), so reruns do not overwrite existing results.
+
+Recommended directory split:
+- 50-artist backup run: `/Users/arses/Desktop/cure-outputs/figure6_eval_50`
+- 100-artist extension run: `/Users/arses/Desktop/cure-outputs/figure6_eval_100`
 
 ## 6) Interpreting Results
 

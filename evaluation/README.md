@@ -86,7 +86,7 @@ python evaluation/paper_figure6_metrics.py \
   --spectral-mode tikhonov \
   --max-prompts-per-group 180 \
   --cache-dir ./models \
-  --output-dir outputs/figure6_eval
+  --output-dir /Users/arses/Desktop/cure-outputs/figure6_eval_50
 ```
 
 Provided lists:
@@ -111,7 +111,7 @@ python evaluation/paper_figure6_metrics.py \
   --spectral-mode tikhonov \
   --max-prompts-per-group 180 \
   --cache-dir ./models \
-  --output-dir outputs/figure6_eval_100
+  --output-dir /Users/arses/Desktop/cure-outputs/figure6_eval_100
 ```
 
 Outputs:
@@ -119,6 +119,7 @@ Outputs:
 - `summary.md`: method-by-checkpoint table
 - `plots/figure6_like_<method>.png`: dual-axis curve (`CLIP_u` and `LPIPSu`)
 - `plots/lpips_u_comparison.png`: cross-method LPIPSu comparison
+- each run is written to a unique timestamped folder under `--output-dir`
 
 Metric conventions:
 - `LPIPSe` (erased prompts): higher = stronger target divergence

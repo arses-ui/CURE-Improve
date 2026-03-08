@@ -138,6 +138,23 @@ def now_utc() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+def make_unique_run_dir(output_root: Path) -> Tuple[str, Path]:
+    """
+    Create a unique timestamped run directory under output_root.
+
+    Uses microsecond-resolution UTC timestamp and falls back to numeric suffix
+    if a collision still occurs.
+    """
+    run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
+    out_dir = output_root / run_id
+    suffix = 1
+    while out_dir.exists():
+        out_dir = output_root / f"{run_id}_{suffix:02d}"
+        suffix += 1
+    out_dir.mkdir(parents=True, exist_ok=False)
+    return run_id, out_dir
+
+
 def detect_device(requested: Optional[str]):
     try:
         import torch
@@ -661,9 +678,7 @@ def main() -> None:
     n_unerased_records = sum(1 for r in records if r.group == "unerased")
 
     device = detect_device(args.device)
-    run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-    out_dir = Path(args.output_dir) / run_id
-    out_dir.mkdir(parents=True, exist_ok=True)
+    run_id, out_dir = make_unique_run_dir(Path(args.output_dir))
 
     print(f"Device: {device}")
     print(f"Methods: {methods}")
@@ -695,6 +710,7 @@ def main() -> None:
                 "device": device,
                 "erased_concepts_file": args.erased_concepts_file,
                 "unerased_artists_file": args.unerased_artists_file,
+                "run_id": run_id,
             },
             "record_counts": {
                 "erased": n_erased_records,
@@ -799,6 +815,7 @@ def main() -> None:
             "templates_file": args.templates_file,
             "n_templates": len(templates),
             "max_prompts_per_group": args.max_prompts_per_group,
+            "run_id": run_id,
         },
         "record_counts": {
             "erased": n_erased_records,
