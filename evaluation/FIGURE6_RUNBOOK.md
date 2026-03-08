@@ -56,7 +56,43 @@ Optional:
 - add `--save-images` to save checkpoint images
 - switch `--spectral-mode gavish_donoho` for GD ablation
 
-## 4) Output Structure
+## 4) Full 100-Artist Extension (Recommended)
+
+Use this when you want the paper-like high-load regime:
+
+```bash
+python evaluation/paper_figure6_metrics.py \
+  --methods "cure,cure_seq" \
+  --erased-concepts-file evaluation/artist_lists/erased_artists_100.txt \
+  --unerased-artists-file evaluation/artist_lists/unerased_artists_10.txt \
+  --checkpoints "1,5,10,25,50,100" \
+  --seeds "11,22,33" \
+  --alpha 2.0 \
+  --steps 20 \
+  --height 384 \
+  --width 384 \
+  --embedding-mode mean_masked \
+  --spectral-mode tikhonov \
+  --max-prompts-per-group 180 \
+  --cache-dir ./models \
+  --output-dir outputs/figure6_eval_100
+```
+
+To dry-run this setup first:
+
+```bash
+python evaluation/paper_figure6_metrics.py \
+  --dry-run \
+  --methods "cure,cure_seq" \
+  --erased-concepts-file evaluation/artist_lists/erased_artists_100.txt \
+  --unerased-artists-file evaluation/artist_lists/unerased_artists_10.txt \
+  --checkpoints "1,5,10,25,50,100" \
+  --seeds "11,22,33" \
+  --max-prompts-per-group 180 \
+  --output-dir outputs/figure6_eval_100
+```
+
+## 5) Output Structure
 
 For each run:
 
@@ -68,15 +104,17 @@ For each run:
 - `plots/lpips_u_comparison.png`
 - `baseline/` (if generated/saved)
 
-## 5) Interpreting Results
+## 6) Interpreting Results
 
 - `LPIPSe` rising with erased count: stronger visual change for erased styles
 - `LPIPSu` staying low: less collateral drift on unerased styles
 - `CLIP_u` staying high: good text-image alignment retained on unerased prompts
 
-For Figure-6-like interference discussion, focus on trends after checkpoints `25 -> 50`.
+For Figure-6-like interference discussion:
+- 50-artist run: focus on `25 -> 50`
+- 100-artist run: focus on `50 -> 100`
 
-## 6) Common Issues
+## 7) Common Issues
 
 - `ModuleNotFoundError: lpips`:
   - install with `pip install lpips`
